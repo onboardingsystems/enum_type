@@ -12,7 +12,7 @@ Something we have often wanted in Elixir was an enumerated type. The benefits we
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+The package can be installed
 by adding `enum_type` to your list of dependencies in `mix.exs`:
 
 ```elixir
@@ -22,10 +22,6 @@ def deps do
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/enum_type](https://hexdocs.pm/enum_type).
 
 ## Creating and using an Enum
 
