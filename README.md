@@ -1,6 +1,14 @@
 # EnumType
 
-Generates Enum Modules that can be used as values and matched in code.
+Generates Enumerated type modules that can be used as values and matched in code.
+
+## Why?
+
+Something we have often wanted in Elixir was an enumerated type. The benefits we wanted are:
+
+- compile time type checking
+- easy pattern matching
+- not ecto specific, but has ecto support
 
 ## Installation
 
