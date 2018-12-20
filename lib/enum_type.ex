@@ -37,6 +37,7 @@ defmodule EnumType do
           def load(_), do: :error
           def value(nil), do: nil
           def value(_), do: :error
+          def dump(_), do: :error
 
           def validate(changeset, field, opts \\ []) do
             Ecto.Changeset.validate_inclusion(changeset, field, enums(), opts)
@@ -75,12 +76,11 @@ defmodule EnumType do
         # Support querying by both the Enum module and the specific value.
         # Error will occur if an invalid value is attempted to be used.
         def cast(unquote(option)), do: {:ok, unquote(option)}
-        def cast(unquote(value)), do: {:ok, unquote(option).value}
+        def cast(unquote(value)), do: {:ok, unquote(option)}
 
         def load(unquote(value)), do: {:ok, unquote(option)}
 
         # Allow both querying by Module and setting a value to the Module when updating or inserting.
-        def dump(unquote(value)), do: {:ok, unquote(value)}
         def dump(unquote(option)), do: {:ok, unquote(option).value}
       end
     end
