@@ -1,13 +1,13 @@
 defmodule EnumType.MixProject do
   use Mix.Project
 
-  @version "1.0.0"
+  @version "1.0.1"
 
   def project do
     [
       app: :enum_type,
       version: @version,
-      elixir: "~> 1.4",
+      elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "An Elixir friendly Enum module generator that can be used by itself or with Ecto.",
