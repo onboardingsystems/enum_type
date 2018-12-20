@@ -36,6 +36,7 @@ defmodule EnumType.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.0", only: [:docs, :dev]},
+      {:ecto, "~> 3.0", only: [:test]}
     ]
   end
 end
