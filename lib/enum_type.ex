@@ -15,8 +15,6 @@ defmodule EnumType do
   defmacro defenum(name, ecto_type, do: block) do
     quote do
       defmodule unquote(name) do
-        @type t :: __MODULE__
-
         Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
 
         if Code.ensure_compiled?(Ecto.Type) do

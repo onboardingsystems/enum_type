@@ -33,7 +33,6 @@ defmodule EnumTypeTest do
     end
     default One
 
-    @spec hello(CustomSample.t) :: String.t
     def hello(enum), do: "Hello #{enum.value}"
   end
 
