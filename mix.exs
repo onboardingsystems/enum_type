@@ -1,7 +1,7 @@
 defmodule EnumType.MixProject do
   use Mix.Project
 
-  @version "1.0.1"
+  @version "1.1.0"
 
   def project do
     [
@@ -10,7 +10,8 @@ defmodule EnumType.MixProject do
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      description: "An Elixir friendly Enum module generator that can be used by itself or with Ecto.",
+      description:
+        "An Elixir friendly Enum module generator that can be used by itself or with Ecto.",
       name: "EnumType",
       package: %{
         licenses: ["Apache 2.0"],
@@ -18,10 +19,13 @@ defmodule EnumType.MixProject do
         links: %{"GitHub" => "https://github.com/onboardingsystems/enum_type"},
         files: ~w(mix.exs README.md lib)
       },
-      docs: [source_ref: "v#{@version}", main: "readme",
-              canonical: "http://hexdocs.pm/enum_type",
-              source_url: "https://github.com/onboardingsystems/enum_type",
-              extras: ["README.md"]]
+      docs: [
+        source_ref: "v#{@version}",
+        main: "readme",
+        canonical: "http://hexdocs.pm/enum_type",
+        source_url: "https://github.com/onboardingsystems/enum_type",
+        extras: ["README.md"]
+      ]
     ]
   end
 
