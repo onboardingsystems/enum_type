@@ -12,43 +12,78 @@ defmodule EnumType do
       defenum(unquote(name), :string, do: unquote(block))
     end
   end
-  defmacro defenum(name, ecto_type, do: block) do
+
+  # Makes an alias: `build_module(MyModule, [:One])` -> `MyModule.One`
+  defp build_module({:__aliases__, meta, prefix}, submodules),
+    do: {:__aliases__, meta, prefix ++ submodules}
+
+  defp build_module(prefix, submodules) when is_atom(prefix),
+    do: {:__aliases__, [], [prefix | submodules]}
+
+  # Given a prefix like `:MyModule` and some subtypes like `[:One,
+  # :Two]`, constructs a pipe list like `MyModule.One | MyModule.Two`.
+  # Returns AST.
+  defp build_type_pipe(prefix, [subtype]) do
+    build_module(prefix, [subtype])
+  end
+
+  defp build_type_pipe(prefix, [subtype | other_types]) do
     quote do
-      defmodule unquote(name) do
-        @type t :: __MODULE__
-
-        Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
-
-        if Code.ensure_compiled?(Ecto.Type) do
-          @behaviour Ecto.Type
-
-          def type, do: unquote(ecto_type)
-        end
-
-        def default, do: nil
-
-        defoverridable [default: 0]
-
-        unquote(block)
-
-        if Code.ensure_compiled?(Ecto.Type) do
-          # Default fallback ecto conversion options.
-          def cast(_), do: :error
-          def load(_), do: :error
-          def value(nil), do: nil
-          def value(_), do: :error
-          def dump(_), do: :error
-
-          def validate(changeset, field, opts \\ []) do
-            Ecto.Changeset.validate_inclusion(changeset, field, enums(), opts)
-          end
-        end
-
-        def enums, do: Enum.reverse(Enum.map(@possible_options, fn({key, _value}) -> key end))
-        def values, do: Enum.reverse(Enum.map(@possible_options, fn({_key, value}) -> value end))
-        def options, do: Enum.reverse(@possible_options)
-      end
+      unquote(build_module(prefix, [subtype])) | unquote(build_type_pipe(prefix, other_types))
     end
+  end
+
+  defmacro defenum(name, ecto_type, do: block) do
+    {:__block__, _, block_body} = block
+
+    values =
+      Enum.reduce(block_body, [], fn
+        {:value, _, [{_, _, [sym]} | _]}, acc -> [sym | acc]
+        _, acc -> acc
+      end)
+
+    type_pipe = build_type_pipe(name, values)
+    # type_pipe_string = Macro.to_string(type_pipe, __ENV__)
+
+    syn =
+      quote do
+        defmodule unquote(name) do
+          @type t :: unquote(type_pipe)
+
+          Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
+
+          if Code.ensure_compiled?(Ecto.Type) do
+            @behaviour Ecto.Type
+
+            def type, do: unquote(ecto_type)
+          end
+
+          def default, do: nil
+
+          defoverridable default: 0
+
+          unquote(block)
+
+          if Code.ensure_compiled?(Ecto.Type) do
+            # Default fallback ecto conversion options.
+            def cast(_), do: :error
+            def load(_), do: :error
+            def value(nil), do: nil
+            def value(_), do: :error
+            def dump(_), do: :error
+
+            def validate(changeset, field, opts \\ []) do
+              Ecto.Changeset.validate_inclusion(changeset, field, enums(), opts)
+            end
+          end
+
+          def enums, do: Enum.reverse(Enum.map(@possible_options, fn {key, _value} -> key end))
+          def values, do: Enum.reverse(Enum.map(@possible_options, fn {_key, value} -> value end))
+          def options, do: Enum.reverse(@possible_options)
+        end
+      end
+
+    syn
   end
 
   defmacro default(option) do
@@ -62,6 +97,8 @@ defmodule EnumType do
       @possible_options {__MODULE__.unquote(option), unquote(value)}
 
       defmodule unquote(option) do
+        @type t :: __MODULE__
+
         def value, do: unquote(value)
         def upcase_value, do: String.upcase(value())
         def downcase_value, do: String.downcase(value())

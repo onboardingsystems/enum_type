@@ -1,14 +1,14 @@
 # EnumType
 
-Generates Enumerated type modules that can be used as values and matched in code.
+Generates Enumerated type modules that can be used as values and matched in code. Creates proper types so Dialyzer will be able to check bad calls.
 
 ## Why?
 
 Something we have often wanted in Elixir was an enumerated type. The benefits we wanted are:
 
-- compile time type checking
-- easy pattern matching
-- not ecto specific, but has ecto support
+ - compile time type checking
+ - easy pattern matching
+ - not Ecto specific, but has Ecto support
 
 ## Installation
 
@@ -22,6 +22,10 @@ def deps do
   ]
 end
 ```
+
+## Changelog
+
+ - `v1.1.0` Adds types to the enum. Dialyzer might start complaining.
 
 ## Creating and using an Enum
 
@@ -41,7 +45,7 @@ defmodule MyApp do
     default Blue
   end
 
-  def do_something(color)
+  @spec do_something(color :: Color.t) :: String.t
   def do_something(Color.Red), do: "got red"
   def do_something(Color.Blue), do: "got blue"
   def do_something(Color.Green), do: "got green"
@@ -86,7 +90,7 @@ defenum Color do
 
   default Blue
 
-  def do_something(color)
+  @spec do_something(color :: Color.t)
   def do_something(Color.Red), do: "got red"
   def do_something(Color.Blue), do: "got blue"
   def do_something(Color.Green), do: "got green"
@@ -166,3 +170,26 @@ end
 Absinthe will produce an upper case value based upon its own enum through the graphql interface. "BASIC" or "PREMIUM".
 
 Outbound or inbound will be mapped correctly to and from the EnumType module name value.
+
+## Dialyzer
+
+Enum types and values are modules under the hood. Since module names are just atoms in Elixir, we don't get compile-time type checks. However, Dialyzer will be able to spot type errors. For example, code like the following:
+
+```elixir
+defenum MyEnum do
+    value One, "one"
+    value Two, "two"
+    value Three, "three"
+end
+
+@spec foo(thing :: MyEnum.t()) :: atom()
+def foo(MyEnum.One), do: :one_here
+def foo(MyEnum.Two), do: :two_here
+def foo(MyEnum.Three), do: :three_here
+
+def bad_func() do
+  foo(MyEnum.NotASubtype)
+end
+```
+
+Dialyzer will complain that `bad_func()` doesn't return because `foo(MyEnum.NotASubtype)` breaks the contract.
