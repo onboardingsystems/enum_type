@@ -52,7 +52,7 @@ defmodule EnumType do
 
           Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
 
-          if Code.ensure_compiled?(Ecto.Type) do
+          if {:module, _module} = Code.ensure_compiled(Ecto.Type) do
             @behaviour Ecto.Type
 
             def type, do: unquote(ecto_type)
@@ -64,7 +64,7 @@ defmodule EnumType do
 
           unquote(block)
 
-          if Code.ensure_compiled?(Ecto.Type) do
+          if {:module, _module} = Code.ensure_compiled(Ecto.Type) do
             # Default fallback ecto conversion options.
             def cast(_), do: :error
             def load(_), do: :error
@@ -109,7 +109,7 @@ defmodule EnumType do
 
       def value(unquote(option)), do: unquote(option).value
 
-      if Code.ensure_compiled?(Ecto.Type) do
+      if {:module, _module} = Code.ensure_compiled(Ecto.Type) do
         # Support querying by both the Enum module and the specific value.
         # Error will occur if an invalid value is attempted to be used.
         def cast(unquote(option)), do: {:ok, unquote(option)}
