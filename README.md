@@ -25,6 +25,7 @@ end
 
 ## Changelog
 
+ - `v1.1.1` Fix warning for Elixir 1.10
  - `v1.1.0` Adds types to the enum. Dialyzer might start complaining.
 
 ## Creating and using an Enum
