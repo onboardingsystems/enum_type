@@ -18,7 +18,7 @@ by adding `enum_type` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:enum_type, "~> 1.0.0"}
+    {:enum_type, "~> 1.1.0"}
   ]
 end
 ```
