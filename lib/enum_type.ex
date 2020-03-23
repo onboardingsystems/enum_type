@@ -43,6 +43,7 @@ defmodule EnumType do
       end)
 
     type_pipe = build_type_pipe(name, values)
+
     # type_pipe_string = Macro.to_string(type_pipe, __ENV__)
 
     syn =
@@ -100,8 +101,8 @@ defmodule EnumType do
         @type t :: __MODULE__
 
         def value, do: unquote(value)
-        def upcase_value, do: String.upcase(value())
-        def downcase_value, do: String.downcase(value())
+        def upcase_value, do: String.upcase(value() |> to_string())
+        def downcase_value, do: String.downcase(value() |> to_string())
         unquote(block)
       end
 
