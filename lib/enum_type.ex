@@ -1,5 +1,8 @@
 defmodule EnumType do
-  @moduledoc false
+  @moduledoc """
+  Generates Enumerated type modules that can be used as values and matched in
+  code. Creates proper types so Dialyzer will be able to check bad calls.
+  """
 
   defmacro __using__(_opts) do
     quote do
@@ -8,7 +11,7 @@ defmodule EnumType do
   end
 
   defmacro defenum(name, do: block) do
-    quote do
+    quote generated: true, location: :keep do
       defenum(unquote(name), :string, do: unquote(block))
     end
   end
@@ -28,7 +31,7 @@ defmodule EnumType do
   end
 
   defp build_type_pipe(prefix, [subtype | other_types]) do
-    quote do
+    quote generated: true, location: :keep do
       unquote(build_module(prefix, [subtype])) | unquote(build_type_pipe(prefix, other_types))
     end
   end
@@ -47,13 +50,13 @@ defmodule EnumType do
     # type_pipe_string = Macro.to_string(type_pipe, __ENV__)
 
     syn =
-      quote do
+      quote generated: true, location: :keep do
         defmodule unquote(name) do
           @type t :: unquote(type_pipe)
 
           Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
 
-          if {:module, _module} = Code.ensure_compiled(Ecto.Type) do
+          with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
             @behaviour Ecto.Type
 
             def type, do: unquote(ecto_type)
@@ -65,7 +68,7 @@ defmodule EnumType do
 
           unquote(block)
 
-          if {:module, _module} = Code.ensure_compiled(Ecto.Type) do
+          with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
             # Default fallback ecto conversion options.
             def cast(_), do: :error
             def load(_), do: :error
@@ -88,13 +91,13 @@ defmodule EnumType do
   end
 
   defmacro default(option) do
-    quote do
+    quote generated: true, location: :keep do
       def default, do: __MODULE__.unquote(option)
     end
   end
 
   defmacro value(option, value, [do: block] \\ [do: nil]) do
-    quote do
+    quote generated: true, location: :keep do
       @possible_options {__MODULE__.unquote(option), unquote(value)}
 
       defmodule unquote(option) do
@@ -110,7 +113,7 @@ defmodule EnumType do
 
       def value(unquote(option)), do: unquote(option).value
 
-      if {:module, _module} = Code.ensure_compiled(Ecto.Type) do
+      with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
         # Support querying by both the Enum module and the specific value.
         # Error will occur if an invalid value is attempted to be used.
         def cast(unquote(option)), do: {:ok, unquote(option)}
