@@ -12,7 +12,7 @@ defmodule EnumType do
 
   defmacro defenum(name, do: block) do
     quote generated: true, location: :keep do
-      defenum(unquote(name), :string, do: unquote(block))
+      defenum(unquote(name), [type: :string], do: unquote(block))
     end
   end
 
@@ -36,7 +36,10 @@ defmodule EnumType do
     end
   end
 
-  defmacro defenum(name, ecto_type, do: block) do
+  defmacro defenum(name, opts, do: block) do
+    ecto_type = Keyword.get(opts, :type)
+    generate_ecto_type = Keyword.get(opts, :generate_ecto_type, true)
+
     {:__block__, _, block_body} = block
 
     values =
@@ -56,7 +59,7 @@ defmodule EnumType do
 
           Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
 
-          with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
+          if unquote(generate_ecto_type?(generate_ecto_type)) do
             @behaviour Ecto.Type
 
             def type, do: unquote(ecto_type)
@@ -68,7 +71,7 @@ defmodule EnumType do
 
           unquote(block)
 
-          with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
+          if unquote(generate_ecto_type?(generate_ecto_type)) do
             # Default fallback ecto conversion options.
             def cast(_), do: :error
             def load(_), do: :error
@@ -113,7 +116,7 @@ defmodule EnumType do
 
       def value(unquote(option)), do: unquote(option).value
 
-      with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
+      if unquote(generate_ecto_type?(true)) do
         # Support querying by both the Enum module and the specific value.
         # Error will occur if an invalid value is attempted to be used.
         def cast(unquote(option)), do: {:ok, unquote(option)}
@@ -126,4 +129,7 @@ defmodule EnumType do
       end
     end
   end
+
+  defp generate_ecto_type?(false), do: false
+  defp generate_ecto_type?(true), do: match?({:module, _module}, Code.ensure_compiled(Ecto.Type))
 end

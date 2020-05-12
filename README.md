@@ -126,7 +126,7 @@ defmodule Subscriber do
   end
 
   # For database field defined as an integer.
-  defenum AgeGroup, :integer do
+  defenum AgeGroup, type: :integer do
     value Minor, 0
     value Adult, 1
     value NotSpecified, 2
@@ -151,6 +151,16 @@ end
 
 When working with an enum type in an Ecto schema, always use the module name of the value you wish to use. The name can
 be included in any query or changeset params.
+
+Note: Ecto support can be disabled by passing `generate_ecto_type: false` to defenum:
+```
+defenum Level, generate_ecto_type: false do
+  value Basic, "basic"
+  value Premium, "premium"
+
+  default Basic
+end
+```
 
 ## Using with Absinthe
 
