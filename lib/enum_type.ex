@@ -57,7 +57,7 @@ defmodule EnumType do
           Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
 
           with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
-            @behaviour Ecto.Type
+            use Ecto.Type
 
             def type, do: unquote(ecto_type)
           end
