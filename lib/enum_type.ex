@@ -57,7 +57,9 @@ defmodule EnumType do
           Module.register_attribute(__MODULE__, :possible_options, accumulate: true)
 
           with {:module, _module} <- Code.ensure_compiled(Ecto.Type) do
-            use Ecto.Type
+            @behaviour Ecto.Type
+            def embed_as(_), do: :self
+            def equal?(term1, term2), do: term1 == term2
 
             def type, do: unquote(ecto_type)
           end
