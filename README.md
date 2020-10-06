@@ -25,6 +25,8 @@ end
 
 ## Changelog
 
+ - `v1.1.3` Replace `use Ecto.Type` with default implementation of `equal?/2`
+   and `embed_as/1`.
  - `v1.1.2` Replace `@behaviour Ecto.Type` with `use Ecto.Type`
  - `v1.1.1` Fix warning for Elixir 1.10
  - `v1.1.0` Adds types to the enum. Dialyzer might start complaining.
