@@ -37,7 +37,10 @@ defmodule EnumType do
   end
 
   defmacro defenum(name, ecto_type, do: block) do
-    {:__block__, _, block_body} = block
+    block_body = case block do
+      {:__block__, _, block_body} -> block_body
+      {:value, _, _} = block_body -> [block_body]
+    end
 
     values =
       Enum.reduce(block_body, [], fn
