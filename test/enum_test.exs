@@ -1,4 +1,5 @@
 defmodule EnumTypeTest do
+  alias EnumTypeTest.MixedTypeSample
   use ExUnit.Case
 
   use EnumType
@@ -37,6 +38,32 @@ defmodule EnumTypeTest do
 
     @spec hello(CustomSample.t()) :: String.t()
     def hello(enum), do: "Hello #{enum.value}"
+  end
+
+  defenum MixedTypeSample do
+    value One, "Test 1"
+    value Two, 2
+    value Three, true
+    value TwentyTwo, "22"
+  end
+
+  defmodule LoadEnumsSubset do
+    EnumType.load_enums(MixedTypeSample, only: [One, TwentyTwo], prefix: "mixed")
+
+    def get_one, do: @mixed_one
+    def get_twenty_two, do: @mixed_twenty_two
+  end
+
+  defmodule LoadAllEnums do
+    EnumType.load_enums(MixedTypeSample, prefix: "mixed")
+
+    def loaded_enums(), do: [@mixed_one, @mixed_two, @mixed_three, @mixed_twenty_two]
+  end
+
+  defmodule LoadEnumsWithoutPrefix do
+    EnumType.load_enums(MixedTypeSample)
+
+    def loaded_enums(), do: [@one, @two, @three, @twenty_two]
   end
 
   describe "enum values" do
@@ -86,6 +113,21 @@ defmodule EnumTypeTest do
 
     test "value function" do
       assert "Custom Test 2" == CustomSample.Two.custom()
+    end
+  end
+
+  describe "load enums" do
+    test "enums are loaded into module attributes" do
+      assert LoadEnumsSubset.get_one() == MixedTypeSample.One.value()
+      assert LoadEnumsSubset.get_twenty_two() == MixedTypeSample.TwentyTwo.value()
+    end
+
+    test "all enums are loaded if :only is not specified" do
+      assert LoadAllEnums.loaded_enums() == MixedTypeSample.values()
+    end
+
+    test "enums maintain their names if :prefix is not specified" do
+      assert LoadEnumsWithoutPrefix.loaded_enums() == MixedTypeSample.values()
     end
   end
 end

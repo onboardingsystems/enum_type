@@ -16,6 +16,31 @@ defmodule EnumType do
     end
   end
 
+  defmacro load_enums(enum_module, opts \\ []) do
+    quote generated: true, location: :keep do
+      normalize_module = fn module ->
+        Module.split(module) |> List.last() |> Macro.underscore()
+      end
+
+      whitelist =
+        unquote(opts)
+        |> Keyword.get(:only, [])
+        |> Enum.map(fn module -> normalize_module.(module) end)
+        |> MapSet.new()
+
+      unquote(enum_module).enums()
+      |> Enum.each(fn enum ->
+        attr_name = normalize_module.(enum)
+
+        if MapSet.size(whitelist) == 0 || MapSet.member?(whitelist, attr_name) do
+          prefix = unquote(opts) |> Keyword.get(:prefix, "") |> String.trim_trailing("_")
+          attr = if prefix != "", do: "#{prefix}_#{attr_name}", else: attr_name
+          Module.put_attribute(__MODULE__, String.to_atom(attr), enum.value())
+        end
+      end)
+    end
+  end
+
   # Makes an alias: `build_module(MyModule, [:One])` -> `MyModule.One`
   defp build_module({:__aliases__, meta, prefix}, submodules),
     do: {:__aliases__, meta, prefix ++ submodules}
