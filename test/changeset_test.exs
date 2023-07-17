@@ -25,9 +25,8 @@ defmodule EctoTest do
     end
   end
 
-
   test "ecto type type/0" do
-    assert EctoSchema.Sample.type == :string
+    assert EctoSchema.Sample.type() == :string
   end
 
   describe "ecto type cast" do
@@ -39,7 +38,7 @@ defmodule EctoTest do
     end
 
     test "with string value" do
-      assert EctoSchema.Sample.cast(EctoSchema.Sample.Red.value) == {:ok, EctoSchema.Sample.Red}
+      assert EctoSchema.Sample.cast(EctoSchema.Sample.Red.value()) == {:ok, EctoSchema.Sample.Red}
     end
 
     test "with invalid module value" do
@@ -53,7 +52,7 @@ defmodule EctoTest do
 
   test "ecto type load" do
     # when loading from the DB, we are guaranteed to have a string version of the atom
-    assert EctoSchema.Sample.load(EctoSchema.Sample.Red.value) == {:ok, EctoSchema.Sample.Red}
+    assert EctoSchema.Sample.load(EctoSchema.Sample.Red.value()) == {:ok, EctoSchema.Sample.Red}
   end
 
   describe "ecto type dump" do
@@ -62,14 +61,13 @@ defmodule EctoTest do
     # inserted into the schema struct outside of the changeset and cast
     # functions at runtime.
     test "with valid value" do
-      assert EctoSchema.Sample.dump(EctoSchema.Sample.Red) == {:ok, EctoSchema.Sample.Red.value}
+      assert EctoSchema.Sample.dump(EctoSchema.Sample.Red) == {:ok, EctoSchema.Sample.Red.value()}
     end
 
     test "with invalid value" do
       assert EctoSchema.Sample.dump(EctoSchema.Sample.Puke) == :error
     end
   end
-
 
   describe "changesets" do
     test "with module value" do
@@ -87,13 +85,19 @@ defmodule EctoTest do
     test "with invalid module value" do
       changeset = EctoSchema.changeset(%EctoSchema{}, %{color: EctoSchema.Sample.Puke})
       refute changeset.valid?
-      assert changeset.errors == [color: {"is invalid", [type: EctoTest.EctoSchema.Sample, validation: :cast]}]
+
+      assert changeset.errors == [
+               color: {"is invalid", [type: EctoTest.EctoSchema.Sample, validation: :cast]}
+             ]
     end
 
     test "with invalid string value" do
       changeset = EctoSchema.changeset(%EctoSchema{}, %{color: "puke"})
       refute changeset.valid?
-      assert changeset.errors == [color: {"is invalid", [type: EctoTest.EctoSchema.Sample, validation: :cast]}]
+
+      assert changeset.errors == [
+               color: {"is invalid", [type: EctoTest.EctoSchema.Sample, validation: :cast]}
+             ]
     end
   end
 end
